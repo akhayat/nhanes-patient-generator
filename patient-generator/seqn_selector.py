@@ -13,6 +13,9 @@ QUERIES = {
 
     'get_tables': sql.SQL("SELECT table_name FROM information_schema.key_column_usage WHERE column_name = 'SEQN' AND "
                           "table_catalog = {db_name} AND table_schema = 'Translated' AND table_name ILIKE %s"),
+                
+    'get_table_null_suffix': sql.SQL("SELECT table_name FROM information_schema.key_column_usage WHERE column_name = 'SEQN' AND "
+                          "table_catalog = {db_name} AND table_schema = 'Translated' AND table_name NOT LIKE '%\__'"),
 
     'get_data': sql.SQL('SELECT * FROM "Translated".{table_name} WHERE "SEQN" = %s'),
 
@@ -34,27 +37,29 @@ def random_seqn(cursor):
     return result
 
 def get_tables(cursor, table_suffix):
-    cursor.execute(QUERIES['get_tables'].format(db_name=sql.Literal(config('DB_NAME'))), [('%' + table_suffix) if table_suffix else '']), 
+    if table_suffix == None:
+        cursor.execute(QUERIES['get_table_null_suffix'].format(db_name=sql.Literal(config('DB_NAME'))))
+    else:
+        cursor.execute(QUERIES['get_tables'].format(db_name=sql.Literal(config('DB_NAME'))), [('%' + table_suffix) if table_suffix else '']), 
     result = cursor.fetchall()
-    logging.info(f"%d tables found", len(result))
+    logging.debug(f"%d tables found", len(result))
     return result
 
 def get_all_data_for_seqn(cursor, table_list, seqn):
     patient = {}
-    logging.debug("table_list = %s" % table_list)
     for table in table_list:
         table_name = table['table_name']
         cursor.execute(QUERIES['get_data'].format(table_name=sql.Identifier(table_name)), [seqn])
         if cursor.rowcount > 0:
             logging.debug(f"table = %s" % table_name)
-            patient[table_name] = cursor.fetchone()
+            table_data = cursor.fetchone()
             cursor.execute(QUERIES['get_sas_labels'], [table_name])
             labels = cursor.fetchall()
-            for label in labels:
-                if label['variable'] in patient[table_name]:
-                    patient[table_name][label['variable']] = {'description': label['sas_label'], 'value': patient[table_name][label['variable']]}
-                else:
-                    logging.debug(f"Column {label['variable']} not found in table {table_name}")
+            patient[table_name] = {}
+            for variable in table_data:
+                if table_data[variable] != None:
+                    label = next((item for item in labels if item['variable'] == variable), None)
+                    patient[table_name][variable] = {"variable": table_data[variable], "description": None if not label else label['sas_label']}
         else:
             logging.debug(f"No data found for SEQN {seqn} in table {table_name}")
     return patient

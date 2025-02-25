@@ -27,3 +27,4 @@ SELECT DISTINCT seqn, suffix FROM (
     UNION
     SELECT l."SEQN" AS seqn, '_L' AS suffix from "DEMO_L" l WHERE "RIDAGEYR" >= 18 and "RIDAGEYR" < 80)
 ORDER BY seqn;
+
