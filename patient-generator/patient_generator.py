@@ -15,7 +15,7 @@ QUERIES = {
                           "table_catalog = {db_name} AND table_schema = 'Translated' AND table_name ILIKE %s"),
                 
     'get_table_null_suffix': sql.SQL("SELECT table_name FROM information_schema.key_column_usage WHERE column_name = 'SEQN' AND "
-                          "table_catalog = {db_name} AND table_schema = 'Translated' AND table_name NOT LIKE '%\__'"),
+                          "table_catalog = {db_name} AND table_schema = 'Translated' AND table_name NOT LIKE '%\\__'"),
 
     'get_data': sql.SQL('SELECT * FROM "Translated".{table_name} WHERE "SEQN" = %s'),
 
@@ -64,15 +64,17 @@ def get_all_data_for_seqn(cursor, table_list, seqn):
             logging.debug(f"No data found for SEQN {seqn} in table {table_name}")
     return patient
 
-def generate_random_patient_as_json(file_name):
+def generate_random_patient_as_json():
     with get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
         seqn = random_seqn(cursor)
         table_list = get_tables(cursor, seqn['table_suffix'])
-        patient = get_all_data_for_seqn(cursor, table_list, seqn['seqn'])
-        with open(file_name, 'w') as file:
-            json.dump(patient, file, indent = 4)
-            logging.info(f"Patient data written to {file_name}")
+        return get_all_data_for_seqn(cursor, table_list, seqn['seqn'])
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    generate_random_patient_as_json('patient.json')
+    patient = generate_random_patient_as_json()
+    file_name = 'patient.json'
+    with open(file_name, 'w') as file:
+        json.dump(patient, file, indent = 4)
+        logging.info(f"Patient data written to {file_name}")
