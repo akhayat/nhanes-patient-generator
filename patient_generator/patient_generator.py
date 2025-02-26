@@ -74,7 +74,7 @@ def generate_random_patient_as_json():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     patient = generate_random_patient_as_json()
-    file_name = 'patient.json'
+    file_name = './examples/patient.json'
     with open(file_name, 'w') as file:
         json.dump(patient, file, indent = 4)
         logging.info(f"Patient data written to {file_name}")
