@@ -1,0 +1,47 @@
+# Calculating Statistics for NHANES variables[edit]
+
+import json
+import logging
+import re
+import statistics
+import sys
+from psycopg2 import sql
+from psycopg2.extras import RealDictCursor
+from patient_generator import db_utils
+
+def data_for_variable(table_name, variable):
+    with db_utils.get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
+        result = []
+        cursor.execute(db_utils.query('data_counts_by_variable').format(table=sql.Literal(table_name), variable=sql.Literal(variable)))
+        for row in cursor.fetchall():
+            if row['ValueDescription'] != 'Missing' and row['Count'] > 0:
+                if row['ValueDescription'] == 'Range of Values':
+                    range = re.split(r' to ', row['CodeOrValue'])
+                    min, max = range[0], range[1]
+                    row['stats'] = stats(data_for_range(table_name, variable, min, max))
+                result.append(row)
+        return result[0] if len(result) == 1 else result
+
+def stats(data):
+    return {"mean": statistics.mean(data), 
+            "stdev": statistics.stdev(data), 
+            "median": statistics.median(data), 
+            "mode": statistics.mode(data), 
+            "variance": statistics.variance(data),
+            "quartiles": statistics.quantiles(data, n=4, method='inclusive')
+            }
+
+
+def data_for_range(table_name, variable, min_value, max_value):
+    with db_utils.get_connection().cursor() as cursor:
+        cursor.execute(db_utils.query('data_for_range').format(variable=sql.Identifier(variable), table=sql.Identifier(table_name)), [min_value, max_value])
+        data = cursor.fetchall()
+        return [x[0] for x in data]
+    
+def data_as_json(table_name, variable):
+    return json.dumps(data_for_variable(table_name, variable), indent=4)
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+    table_name, variable = sys.argv[1], sys.argv[2]
+    logging.info("Stats for %s: %s", table_name, data_as_json(table_name, variable))
