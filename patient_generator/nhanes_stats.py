@@ -20,7 +20,7 @@ def data_for_variable(table_name, variable):
                     min, max = range[0], range[1]
                     row['stats'] = stats(data_for_range(table_name, variable, min, max))
                 result.append(row)
-        return result[0] if len(result) == 1 else result
+        return result
 
 def stats(data):
     return {"mean": statistics.mean(data), 

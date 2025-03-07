@@ -18,11 +18,15 @@ QUERIES = {
     'sas_labels': sql.SQL('SELECT "Variable" variable, "SasLabel" sas_label FROM "Metadata"."QuestionnaireVariables" '
                       'WHERE "Variable" NOT LIKE \'SEQN\' AND "TableName" = %s and "SasLabel" IS NOT NULL'),
 
-    'data_counts_by_variable': sql.SQL('SELECT qv."Variable", qv."TableName", "CodeOrValue", "Count", "ValueDescription", "SasLabel" '
-                                        'FROM "Metadata"."VariableCodebook" vc INNER JOIN "Metadata"."QuestionnaireVariables" qv ON (vc."TableName" = qv."TableName" and vc."Variable" = qv."Variable") '
+    'data_counts_by_variable': sql.SQL('SELECT qv."Variable", qv."TableName", "CodeOrValue", "Count", "ValueDescription", "SasLabel", "Target" '
+                                        'FROM "Metadata"."VariableCodebook" vc INNER JOIN "Metadata"."QuestionnaireVariables" qv '
+                                        'ON (vc."TableName" = qv."TableName" and vc."Variable" = qv."Variable") '
                                         'WHERE qv."TableName" ILIKE {table} AND qv."Variable" ILIKE {variable}'),
 
-    'data_for_range': sql.SQL('SELECT {variable} FROM "Translated".{table} WHERE {variable} >= %s AND {variable} <= %s')
+    'data_for_range': sql.SQL('SELECT {variable} FROM "Translated".{table} WHERE {variable} >= %s AND {variable} <= %s'),
+
+    'table_info': sql.SQL('SELECT "TableName", "DatePublished", "DocFile", "Description" '
+                          'FROM "Metadata"."QuestionnaireDescriptions" ORDER BY "EndYear" DESC, "TableName" ASC')
 }
 
 def queries():

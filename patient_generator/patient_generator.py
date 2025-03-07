@@ -8,6 +8,8 @@ from psycopg2.extras import RealDictCursor
 from decouple import config
 from patient_generator import db_utils
 
+file_path = '/bin/examples/patient.json'
+
 def random_seqn(cursor):
     cursor.execute(db_utils.query('random_seqn'))
     result = cursor.fetchone()
@@ -52,7 +54,6 @@ def generate_random_patient():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     patient = generate_random_patient()
-    file_name = './examples/patient.json'
-    with open(file_name, 'w') as file:
+    with open(file_path, 'w') as file:
         json.dump(patient, file, indent = 4)
-        logging.info(f"Patient data written to {file_name}")
+        logging.info(f"Patient data written to {file_path}")
