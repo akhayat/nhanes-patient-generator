@@ -2,7 +2,7 @@
 
 Python Django app for retrieving and analyzing data obtained from the CDC's National Health and Nutrition Examination Survey (NHANES) with the intent of generating a simulated patient for diagnostics training purposes.
 
-*This is a work in progress.*
+**This is a work in progress.**
 
 ## Endpoints
 
