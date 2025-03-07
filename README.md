@@ -73,7 +73,50 @@ Example output:
 
 ]
   ```
+### /stats
 
+  Required Params  
+  * **table:** The desired NHANES table
+  * **variable:** The desired column in the NHANES table
+
+  If the variable type is a range of values, it returns the min, max and other statistical calculations on the data such as standard deviation, mean, mode, and quartiles. 
+
+  If the variable type is discrete, returns a count for each distinct answer.
+
+  Some variables can have a mix of both. 
+
+  Example output for `/stats?table=DEMO_L&variable=DMDHHSIZ`
+
+  ```
+  [
+  {
+    "Variable": "DMDHHSIZ",
+    "TableName": "DEMO_L",
+    "CodeOrValue": "1 to 6",
+    "Count": 11309,
+    "ValueDescription": "Range of Values",
+    "SasLabel": "Total number of people in the Household",
+    "Target": "Both males and females 0 YEARS - 150 YEARS",
+    "stats": {
+      "mean": 3.03545848439296,
+      "stdev": 1.49189477278618,
+      "median": 3,
+      "mode": 2,
+      "variance": 2.22575001306672,
+      "quartiles": [2, 3, 4]
+    }
+  },
+  {
+    "Variable": "DMDHHSIZ",
+    "TableName": "DEMO_L",
+    "CodeOrValue": "7",
+    "Count": 624,
+    "ValueDescription": "7 or more people in the Household",
+    "SasLabel": "Total number of people in the Household",
+    "Target": "Both males and females 0 YEARS - 150 YEARS"
+  }
+]
+  ```
   ## Running the service locally
   To run the service locally, create a file called `.env` with the database connection details:
   ```
@@ -88,3 +131,5 @@ NHANES data was loaded into a PostgreSQL database using [nhanes-postgres](https:
 Afterwards, run
 
 ```python manage.py runserver```
+
+The service should be available at `localhost:8000`
