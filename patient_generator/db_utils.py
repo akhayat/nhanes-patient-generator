@@ -29,7 +29,7 @@ QUERIES = {
                           'FROM "Metadata"."QuestionnaireDescriptions" ORDER BY "EndYear" DESC, "TableName" ASC')
 }
 
-class DBInterface:
+class DBTool:
     def __init__(self):
         pass
 

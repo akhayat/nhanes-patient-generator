@@ -9,7 +9,7 @@ from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
 from patient_generator import db_utils
 
-db_interface = db_utils.DBInterface()
+db_interface = db_utils.DBTool()
 
 def data_for_variable(table_name, variable):
     with db_interface.get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
@@ -25,13 +25,14 @@ def data_for_variable(table_name, variable):
         return result
 
 def stats(data):
-    return {"mean": statistics.mean(data), 
-            "stdev": statistics.stdev(data), 
-            "median": statistics.median(data), 
-            "mode": statistics.mode(data), 
-            "variance": statistics.variance(data),
-            "quartiles": statistics.quantiles(data, n=4, method='inclusive')
-            }
+    return {
+        "mean": statistics.mean(data), 
+        "stdev": statistics.stdev(data), 
+        "median": statistics.median(data), 
+        "mode": statistics.mode(data), 
+        "variance": statistics.variance(data),
+        "quartiles": statistics.quantiles(data, n=4, method='inclusive')
+    }
 
 
 def data_for_range(table_name, variable, min_value, max_value):

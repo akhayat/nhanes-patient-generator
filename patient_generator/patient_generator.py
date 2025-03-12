@@ -9,7 +9,7 @@ from decouple import config
 from patient_generator import db_utils
 
 file_path = '/bin/examples/patient.json'
-db_interface = db_utils.DBInterface()   
+db_interface = db_utils.DBTool()   
 
 def random_seqn(cursor):
     cursor.execute(db_interface.query('random_seqn'))
