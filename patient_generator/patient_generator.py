@@ -9,18 +9,19 @@ from decouple import config
 from patient_generator import db_utils
 
 file_path = '/bin/examples/patient.json'
+db_interface = db_utils.DBInterface()   
 
 def random_seqn(cursor):
-    cursor.execute(db_utils.query('random_seqn'))
+    cursor.execute(db_interface.query('random_seqn'))
     result = cursor.fetchone()
     logging.info(f"Selected SEQN: {result['seqn']} with table suffix: {result['table_suffix']}")
     return result
 
 def get_tables(cursor, table_suffix):
     if table_suffix == None:
-        cursor.execute(db_utils.query('tables_null_suffix').format(db_name=sql.Literal(config('DB_NAME'))))
+        cursor.execute(db_interface.query('tables_null_suffix').format(db_name=sql.Literal(config('DB_NAME'))))
     else:
-        cursor.execute(db_utils.query('tables').format(db_name=sql.Literal(config('DB_NAME'))), [('%' + table_suffix) if table_suffix else '']), 
+        cursor.execute(db_interface.query('tables').format(db_name=sql.Literal(config('DB_NAME'))), [('%' + table_suffix) if table_suffix else '']), 
     result = cursor.fetchall()
     logging.debug(f"%d tables found", len(result))
     return result
@@ -29,11 +30,11 @@ def get_all_data_for_seqn(cursor, table_list, seqn):
     patient = {}
     for table in table_list:
         table_name = table['table_name']
-        cursor.execute(db_utils.query('data_for_seqn').format(table_name=sql.Identifier(table_name)), [seqn])
+        cursor.execute(db_interface.query('data_for_seqn').format(table_name=sql.Identifier(table_name)), [seqn])
         if cursor.rowcount > 0:
             logging.debug(f"table = %s" % table_name)
             table_data = cursor.fetchone()
-            cursor.execute(db_utils.query('sas_labels'), [table_name])
+            cursor.execute(db_interface.query('sas_labels'), [table_name])
             labels = cursor.fetchall()
             patient[table_name] = {}
             for variable in table_data:
@@ -45,7 +46,7 @@ def get_all_data_for_seqn(cursor, table_list, seqn):
     return patient
 
 def generate_random_patient():
-    with db_utils.get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_interface.get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
         seqn = random_seqn(cursor)
         table_list = get_tables(cursor, seqn['table_suffix'])
         return get_all_data_for_seqn(cursor, table_list, seqn['seqn'])

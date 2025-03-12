@@ -9,10 +9,12 @@ from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
 from patient_generator import db_utils
 
+db_interface = db_utils.DBInterface()
+
 def data_for_variable(table_name, variable):
-    with db_utils.get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_interface.get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
         result = []
-        cursor.execute(db_utils.query('data_counts_by_variable').format(table=sql.Literal(table_name), variable=sql.Literal(variable)))
+        cursor.execute(db_interface.query('data_counts_by_variable').format(table=sql.Literal(table_name), variable=sql.Literal(variable)))
         for row in cursor.fetchall():
             if row['ValueDescription'] != 'Missing' and row['Count'] > 0:
                 if row['ValueDescription'] == 'Range of Values':
@@ -33,10 +35,9 @@ def stats(data):
 
 
 def data_for_range(table_name, variable, min_value, max_value):
-    with db_utils.get_connection().cursor() as cursor:
-        cursor.execute(db_utils.query('data_for_range').format(variable=sql.Identifier(variable), table=sql.Identifier(table_name)), [min_value, max_value])
-        data = cursor.fetchall()
-        return [x[0] for x in data]
+    with db_interface.get_connection().cursor() as cursor:
+        cursor.execute(db_interface.query('data_for_range').format(variable=sql.Identifier(variable), table=sql.Identifier(table_name)), [min_value, max_value])
+        return [row[0] for row in cursor.fetchall()]
     
 def data_as_json(table_name, variable):
     return json.dumps(data_for_variable(table_name, variable), indent=4)

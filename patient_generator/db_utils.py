@@ -29,15 +29,15 @@ QUERIES = {
                           'FROM "Metadata"."QuestionnaireDescriptions" ORDER BY "EndYear" DESC, "TableName" ASC')
 }
 
-def queries():
-    return QUERIES
+class DBInterface:
+    def __init__(self):
+        pass
 
-def query(query_name):
-    return QUERIES[query_name]
+    def get_connection(self): 
+        try:
+            return psycopg2.connect(dbname=config('DB_NAME'), user=config('DB_USER'), host=config('DB_HOST'), password=config('DB_PASS'))
+        except:
+            logging.error(f"Unable to connect to database {config('DB_NAME')}")
 
-def get_connection(): 
-    try:
-        connection = psycopg2.connect(dbname=config('DB_NAME'), user=config('DB_USER'), host=config('DB_HOST'), password=config('DB_PASS'))
-        return connection
-    except:
-        logging.error(f"Unable to connect to database {config('DB_NAME')}")
+    def query(self, query_name):
+        return QUERIES[query_name]
