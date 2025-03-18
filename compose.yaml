@@ -1,0 +1,18 @@
+services:
+  db:
+    image: "akhayat/nhanes-pg"
+    environment:
+      - CONTAINER_USER_USERNAME=test
+      - CONTAINER_USER_PASSWORD=test
+    ports:
+      - "8787:8787"
+      - "2200:22"
+      - "5432:5432"
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db

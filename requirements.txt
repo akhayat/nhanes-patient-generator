@@ -10,7 +10,6 @@ importlib_metadata==8.0.0
 ipython==8.12.3
 ipywidgets==8.1.5
 Jinja2==3.1.6
-jnius==1.1.0
 keyring==25.6.0
 mock==5.2.0
 Pillow==11.1.0
@@ -24,4 +23,3 @@ Sphinx==8.2.3
 thread==2.0.5
 tornado==6.4.2
 urllib3_secure_extra==0.1.0
-xmlrpclib==1.0.1

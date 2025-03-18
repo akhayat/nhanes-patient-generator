@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "patient_generator"
+version = "1.0.0"
+dependencies = {file = ["requirements.txt"]}
+requires-python = ">=3.12"
+authors = [
+  {name = "Anthony Khayat", email = "anthonykhayat1@gmail.com"}
+]
+description = "Project to generate sample patients using NHANES data from the CDC"
+readme = "README.me"
+license = "Apache"
+license-files = ["LICEN[CS]E.*"]
+keywords = ["nhanes", "postgresql", "cdc", "patient", "stats"]
