@@ -1,6 +1,6 @@
 services:
   db:
-    image: "akhayat/nhanes-pg"
+    image: "akhayat1/nhanes-postgres"
     environment:
       - CONTAINER_USER_USERNAME=test
       - CONTAINER_USER_PASSWORD=test
@@ -8,6 +8,7 @@ services:
       - "8787:8787"
       - "2200:22"
       - "5432:5432"
+
   web:
     build: .
     ports:
