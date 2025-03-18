@@ -1,4 +1,9 @@
-# Calculating Statistics for NHANES variables[edit]
+# Script for retrieving data from a given dataset (table) and variable (column)
+# from a PostgreSQL database containing NHANES survey data from the CDC
+# It then returns the count for each variable if discrete, and, if it
+# contains a continuous range of data, calculates the
+# standard, deviation, median, mode, variance, and quartiles.
+# Returns the result as a list of JSON objects
 
 import json
 import logging
