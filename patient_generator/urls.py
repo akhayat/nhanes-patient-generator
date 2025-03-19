@@ -22,5 +22,6 @@ urlpatterns = [
     re_path(r'admin\/?', admin.site.urls),
     re_path(r'generate\/?$', views.generate, name='generate'),
     re_path(r'stats\/?$', views.stats, name='stats'),
-    re_path(r'table-info\/?$', views.table_info, name='table-info')
+    re_path(r'table-info\/?$', views.table_info, name='table-info'),
+    re_path(r'search\/?$', views.search, name='search')
 ]
