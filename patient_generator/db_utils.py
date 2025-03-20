@@ -10,7 +10,7 @@ class DBTool:
 
     def get_connection(self): 
         try:
-            return psycopg2.connect(dbname=config('DB_NAME'), user=config('DB_USER'), host=config('DB_HOST'), password=config('DB_PASS'))
+            return psycopg2.connect(dbname=config('DB_NAME'), user=config('DB_USER'), host=config('DB_HOST'), password=config('DB_PASS'), port=config('DB_PORT'))
         except:
             logging.error(f"Unable to connect to database {config('DB_NAME')}")
 
@@ -50,8 +50,7 @@ QUERIES = {
                 'FROM "Metadata"."QuestionnaireDescriptions" ORDER BY "EndYear" DESC, "TableName" ASC'),
 
     'search': 
-        sql.SQL('SELECT qv."Variable", qv."TableName", "SasLabel", "Description", '
-                'ts_rank(to_tsvector(concat(qv."Variable", \' \', qv."TableName", \' \', "SasLabel", \' \', "Description")), to_tsquery(%s)) rank '
-                'FROM "Metadata"."VariableCodebook" vc INNER JOIN "Metadata"."QuestionnaireVariables" qv  '
-                'ON (vc."TableName" = qv."TableName" and vc."Variable" = qv."Variable") order by rank desc LIMIT %s')
+        sql.SQL('SELECT "Variable", "TableName", "SasLabel", "Description", ts_rank("VariableTSV", to_tsquery({query})) rank '
+                'FROM "Metadata"."QuestionnaireVariables" '
+                'WHERE "VariableTSV" @@ to_tsquery({query}) ORDER BY rank desc LIMIT %s')
 }
