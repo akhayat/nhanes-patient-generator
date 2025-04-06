@@ -1,6 +1,6 @@
 
 import logging
-import psycopg2
+from django.db import connections
 from psycopg2 import sql
 from decouple import config
 
@@ -8,11 +8,12 @@ class DBTool:
     def __init__(self):
         pass
 
-    def get_connection(self): 
+    def cursor(self, cursor_factory=None): 
         try:
-            return psycopg2.connect(dbname=config('DB_NAME'), user=config('DB_USER'), host=config('DB_HOST'), password=config('DB_PASS'), port=config('DB_PORT'))
-        except:
+            return connections['default'].cursor().connection.cursor(cursor_factory=cursor_factory)
+        except Exception as e:
             logging.error(f"Unable to connect to database {config('DB_NAME')}")
+            logging.error(f"Error: {e}")
 
     def query(self, query_name):
         return QUERIES[query_name]

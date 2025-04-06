@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from patient_generator import patient_generator
+from patient_generator import generator
 from patient_generator import nhanes_stats
 from patient_generator import metainfo
 from patient_generator import nhanes_search
 
 
 def generate(request):
-    return JsonResponse(patient_generator.generate_random_patient())
+    return JsonResponse(generator.generate_random_patient())
 
 def stats(request):
     return JsonResponse(nhanes_stats.data_for_variable(request.GET['table'], request.GET['variable']), safe=False)

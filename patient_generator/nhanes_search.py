@@ -9,7 +9,7 @@ from patient_generator import db_utils
 db_tool = db_utils.DBTool()
 
 def search(search_query, limit=50): 
-    with db_tool.get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_tool.cursor(cursor_factory=RealDictCursor) as cursor:
         ts_query = search_query.strip().replace(' ', ' | ')
         cursor.execute(db_tool.query('search').format(query=sql.Literal(ts_query)), [limit])
         results = cursor.fetchall()

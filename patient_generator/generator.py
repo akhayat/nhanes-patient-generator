@@ -46,7 +46,7 @@ def get_all_data_for_seqn(cursor, table_list, seqn):
     return patient
 
 def generate_random_patient():
-    with db_tool.get_connection().cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_tool.cursor(cursor_factory=RealDictCursor) as cursor:
         seqn = random_seqn(cursor)
         table_list = get_tables(cursor, seqn['table_suffix'])
         return get_all_data_for_seqn(cursor, table_list, seqn['seqn'])
