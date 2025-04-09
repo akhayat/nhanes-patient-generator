@@ -7,4 +7,4 @@ services:
     env_file:
       - .env.docker
     volumes:
-      - ~/.certs:/certs
+      - ${HOST_CERT_DIR}:/certs
