@@ -24,3 +24,5 @@ Sphinx==8.2.3
 thread==2.0.5
 tornado==6.4.2
 urllib3_secure_extra==0.1.0
+django-extensions==3.2.3
+Werkzeug==3.1.3
