@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from patient_generator import generator
-from patient_generator import nhanes_stats
-from patient_generator import metainfo
-from patient_generator import nhanes_search
+from patient_generator.db_scripts import generator
+from patient_generator.db_scripts import nhanes_stats
+from patient_generator.db_scripts import metainfo
+from patient_generator.db_scripts import nhanes_search
 
 
 def generate(request):

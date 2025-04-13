@@ -1,6 +1,6 @@
 # Description: Get information about NHANES tables
 from psycopg2.extras import RealDictCursor
-from patient_generator import db_utils
+from patient_generator.db_scripts import db_utils
 
 db_interface = db_utils.DBTool()
 

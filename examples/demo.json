@@ -1,0 +1,49 @@
+{
+    "Name": {
+        "First": "John",
+        "Last": "Doe"
+    },
+    "Age": 0,
+    "Sex": "M",
+    "Gender": "M",
+    "PrimaryLanguage": "English",
+    "SecondaryLanguage": "Spanish",
+    "PrimaryCarePhysician": null,
+    "Allergies": [],
+    "TobaccoStatus": {
+        "Status": ["Never", "Current", "Former"],
+        "Years": 0,
+        "PacksPerDay": 0,
+        "YearsQuit": 0,
+        "Type": ["Cigarettes", "Cigar", "Pipe", "Smokeless", "Vape"]
+    },
+    "AlcoholUse": {
+        "Status": ["Never", "Current", "Former"],
+        "Frequency": ["Daily", "Weekly", "Monthly", "Yearly"],
+        "Quantity": 0,
+        "Type": ["Beer", "Wine", "Liquor"]
+    },
+    "DrugUse": {
+        "Type": ["Cocaine", "Heroin", "Meth", "Marijuana", "Prescription", "Other"],
+        "Frequency": ["Daily", "Weekly", "Monthly", "Yearly"], 
+        "IVDU": false      
+    },
+    "Housing": ["House", "Apartment", "Shelter", "Street", "SNF", "ALF","LTACH","Group Home"],
+    "Employment": ["Full-time", "Part-time", "Unemployed", "Retired", "Student", "Other"],
+    "Education": ["None", "Elementary", "Middle", "High", "College", "Graduate"],
+    "MaritalStatus": ["Single", "Married", "Divorced", "Widowed", "Separated"],
+    "Children": 0,
+    "Pets": {
+        "Dogs": 0,
+        "Cats": 0,
+        "Birds": 0,
+        "Other": 0
+    },
+    "SickContacts": false, 
+    "Travel": {
+        "Domestic": false,
+        "International": false
+    }
+    "ChiefComplaint": null,
+    "Diet": ["Regular", "Vegetarian", "Vegan", "Kosher", "Halal", "Low Sodium", "Low Fat", "Low Carb", "Gluten Free", "Other"],
+}

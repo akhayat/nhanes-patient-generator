@@ -53,5 +53,9 @@ QUERIES = {
     'search': 
         sql.SQL('SELECT "Variable", "TableName", "SasLabel", "Description", ts_rank("VariableTSV", to_tsquery({query})) rank '
                 'FROM "Metadata"."QuestionnaireVariables" '
-                'WHERE "VariableTSV" @@ to_tsquery({query}) ORDER BY rank desc LIMIT %s')
+                'WHERE "VariableTSV" @@ to_tsquery({query}) ORDER BY rank desc LIMIT %s'),
+
+    'random_name':
+        sql.SQL("SELECT first.name first_name, last.name last_name FROM pool.first_name first INNER JOIN pool.last_name last ON (first.ethnicity = last.ethnicity) "
+                "WHERE last.ethnicity = %s and gender = %s order by random() limit 1")
 }

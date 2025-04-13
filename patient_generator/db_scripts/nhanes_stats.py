@@ -12,7 +12,7 @@ import statistics
 import sys
 from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
-from patient_generator import db_utils
+from patient_generator.db_scripts import db_utils
 
 db_tool = db_utils.DBTool()
 
