@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
-from patient_generator import nhanes_stats
-from patient_generator import db_utils
+from patient_generator.db_scripts import nhanes_stats
+from patient_generator.db_scripts import db_tool
 
 DATA_COUNTS_BY_VARIABLE =  [{'Variable': 'RIDAGEYR', 'TableName': 'DEMO_H', 'CodeOrValue': '0 to 79', 
                             'Count': 9823, 'ValueDescription': 'Range of Values', 'SasLabel': 'Age in years at screening'}, 
@@ -26,7 +26,7 @@ class MockCursor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-class MockInterface(db_utils.DBInterface):
+class MockInterface(db_tool.DBInterface):
     def get_connection(self):
         return MockConnection()
     

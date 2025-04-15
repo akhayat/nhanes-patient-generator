@@ -1,5 +1,6 @@
 
 import logging
+import inflection
 from django.db import connections
 from psycopg2 import sql
 from decouple import config
@@ -17,6 +18,28 @@ class DBTool:
 
     def query(self, query_name):
         return QUERIES[query_name]
+    
+    def conditions(self, condition):
+        return CONDITIONS[condition]
+    
+    def demo_table(self, table_name):
+        return 'DEMO' + self.table_suffix(table_name)
+    
+    def table_suffix(self, table_name):
+        suffix = table_name.split('_')
+        return ('_' + suffix[-1]) if len(suffix) > 1 else ''
+    
+    def camelize_keys(self, dict):
+        for old_key in list(dict.keys()):
+            dict[inflection.camelize(old_key, False)] = dict.pop(old_key)
+        return dict
+
+CONDITIONS = {
+    "adults_only": sql.SQL('"RIDAGEYR" >= 18'),
+    "gender": sql.SQL('"RIAGENDR" = %s'),
+    "by_seqn": sql.SQL('"SEQN" = %s'),
+
+}
 
 QUERIES = {
     'random_seqn': 
@@ -30,8 +53,8 @@ QUERIES = {
         sql.SQL("SELECT table_name FROM information_schema.key_column_usage WHERE column_name = 'SEQN' "
                 "AND table_catalog = {db_name} AND table_schema = 'Translated' AND table_name NOT LIKE '%\\__'"),
 
-    'data_for_seqn': 
-        sql.SQL('SELECT * FROM "Translated".{table_name} WHERE "SEQN" = %s'),
+    'data_for_table': 
+        sql.SQL('SELECT * FROM "Translated".{table_name}'),
 
     'sas_labels': 
         sql.SQL('SELECT "Variable" variable, "SasLabel" sas_label FROM "Metadata"."QuestionnaireVariables" '
@@ -44,7 +67,8 @@ QUERIES = {
                 'WHERE qv."TableName" ILIKE {table} AND qv."Variable" ILIKE {variable}'),
 
     'data_for_range': 
-        sql.SQL('SELECT {variable} FROM "Translated".{table} WHERE {variable} >= %s AND {variable} <= %s'),
+        sql.SQL('SELECT {variable} FROM "Translated".{table} t INNER JOIN "Translated".{demo_table} dt ON (t."SEQN" = dt."SEQN") ' 
+                'WHERE {variable} >= %s AND {variable} < %s'),
 
     'table_info': 
         sql.SQL('SELECT "TableName", "DatePublished", "DocFile", "Description" '
@@ -59,3 +83,4 @@ QUERIES = {
         sql.SQL("SELECT first.name first_name, last.name last_name FROM pool.first_name first INNER JOIN pool.last_name last ON (first.ethnicity = last.ethnicity) "
                 "WHERE last.ethnicity = %s and gender = %s order by random() limit 1")
 }
+

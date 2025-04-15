@@ -6,10 +6,10 @@ import logging
 from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
 from decouple import config
-from patient_generator import db_utils
+from patient_generator.db_scripts import db_tool
 
 file_path = '/bin/examples/patient.json'
-db_tool = db_utils.DBTool()   
+db_tool = db_tool.DBTool()   
 
 def random_seqn(cursor):
     cursor.execute(db_tool.query('random_seqn'))
@@ -30,7 +30,8 @@ def get_all_data_for_seqn(cursor, table_list, seqn):
     patient = {}
     for table in table_list:
         table_name = table['table_name']
-        cursor.execute(db_tool.query('data_for_seqn').format(table_name=sql.Identifier(table_name)), [seqn])
+        cursor.execute(db_tool.query('data_for_table').format(table_name=sql.Identifier(table_name)) + 
+                       sql.SQL(' WHERE ') + db_tool.conditions('by_seqn'), [seqn])
         if cursor.rowcount > 0:
             logging.debug(f"table = %s" % table_name)
             table_data = cursor.fetchone()

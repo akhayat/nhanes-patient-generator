@@ -1,8 +1,8 @@
 import logging
 import sys
-from patient_generator.db_scripts import db_utils
+from patient_generator.db_scripts import db_tool
 
-db_tool = db_utils.DBTool()
+db_tool = db_tool.DBTool()
 
 def generate_name(ethnicity, gender):
     with db_tool.cursor() as cursor:
@@ -11,5 +11,6 @@ def generate_name(ethnicity, gender):
         return result
     
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     name = generate_name(sys.argv[1], sys.argv[2])
-    print(f"Generated name: {name}")
+    logging.debug("Generated name: %s", name)
