@@ -22,6 +22,9 @@ class DBTool:
     def conditions(self, condition):
         return CONDITIONS[condition]
     
+    def join(self, join_name):
+        return JOINS[join_name]
+    
     def demo_table(self, table_name):
         return 'DEMO' + self.table_suffix(table_name)
     
@@ -37,8 +40,13 @@ class DBTool:
 CONDITIONS = {
     "adults_only": sql.SQL('"RIDAGEYR" >= 18'),
     "gender": sql.SQL('"RIAGENDR" = %s'),
+    "variable_range": sql.SQL("{variable} >= %s AND {variable} < %s"),
     "by_seqn": sql.SQL('"SEQN" = %s'),
 
+}
+
+JOINS = {
+    "demo": sql.SQL('INNER JOIN {demo_table} dt ON (dt."SEQN" = t."SEQN")'),
 }
 
 QUERIES = {
@@ -67,8 +75,7 @@ QUERIES = {
                 'WHERE qv."TableName" ILIKE {table} AND qv."Variable" ILIKE {variable}'),
 
     'data_for_range': 
-        sql.SQL('SELECT {variable} FROM "Translated".{table} t INNER JOIN "Translated".{demo_table} dt ON (t."SEQN" = dt."SEQN") ' 
-                'WHERE {variable} >= %s AND {variable} < %s'),
+        sql.SQL('SELECT {variable} FROM "Translated".{table} t '),
 
     'table_info': 
         sql.SQL('SELECT "TableName", "DatePublished", "DocFile", "Description" '

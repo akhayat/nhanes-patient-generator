@@ -43,7 +43,7 @@
     "Travel": {
         "Domestic": false,
         "International": false
-    }
+    },
     "ChiefComplaint": null,
     "Diet": ["Regular", "Vegetarian", "Vegan", "Kosher", "Halal", "Low Sodium", "Low Fat", "Low Carb", "Gluten Free", "Other"],
 }

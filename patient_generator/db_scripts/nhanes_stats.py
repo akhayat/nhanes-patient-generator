@@ -55,11 +55,12 @@ def stats(table_name, demo_table, variable, min, max, adults_only, gender):
 
 def data_for_range(table_name, demo_table, variable, min_value, max_value, adults_only=False, gender=None):
     with db_tool.cursor() as cursor:
-        query = db_tool.query('data_for_range').format(variable=sql.Identifier(variable), 
-                demo_table=sql.Identifier(demo_table), table=sql.Identifier(table_name))
+        query = db_tool.query('data_for_range').format(variable=sql.Identifier(variable), table=sql.Identifier(table_name))
+        if table_name != demo_table:
+            query += db_tool.join('demo').format(demo_table=sql.Identifier(demo_table))
+        query +=  sql.SQL(' WHERE ') + db_tool.conditions('variable_range').format(variable=sql.Identifier(variable))
         conditions = sql.SQL(' ')
-        logging.debug('adults_only=%s, gender=%s', adults_only, gender)
-        
+
         args = [min_value, max_value]
         if adults_only:
             conditions += db_tool.conditions('adults_only')
@@ -68,6 +69,7 @@ def data_for_range(table_name, demo_table, variable, min_value, max_value, adult
             args.append('Male' if gender.lower() == 'm' else 'Female')
         if conditions.as_string(cursor).strip():
             query += conditions.join(' AND ')
+        
         logging.debug("QUERY: %s", query.as_string(cursor))
         cursor.execute(query, args)
         return [row[0] for row in cursor.fetchall()]
@@ -86,6 +88,5 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     table_name, variable = sys.argv[1], sys.argv[2]
     adults_only, gender = parse_adults_only_from_args(sys.argv), parse_gender_from_args(sys.argv)
-    logging.debug('adults_only=%s, gender=%s', adults_only, gender)
 
     logging.info("Stats for %s: %s", table_name, data_as_json(table_name, variable, adults_only, gender))
