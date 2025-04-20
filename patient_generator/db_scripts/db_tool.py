@@ -42,11 +42,11 @@ CONDITIONS = {
     "gender": sql.SQL('"RIAGENDR" = %s'),
     "variable_range": sql.SQL("{variable} >= %s AND {variable} < %s"),
     "by_seqn": sql.SQL('"SEQN" = %s'),
-
+    "variable_value": sql.SQL('{variable} = %s'),
 }
 
 JOINS = {
-    "demo": sql.SQL('INNER JOIN {demo_table} dt ON (dt."SEQN" = t."SEQN")'),
+    "demo": sql.SQL('INNER JOIN "Translated".{demo_table} dt ON (dt."SEQN" = t."SEQN")'),
 }
 
 QUERIES = {
@@ -77,9 +77,12 @@ QUERIES = {
     'data_for_range': 
         sql.SQL('SELECT {variable} FROM "Translated".{table} t '),
 
+    'count_for_variable': 
+        sql.SQL('SELECT DISTINCT COUNT({variable}) FROM "Translated".{table} t '),
+
     'table_info': 
         sql.SQL('SELECT "TableName", "DatePublished", "DocFile", "Description" '
-                'FROM "Metadata"."QuestionnaireDescriptions" ORDER BY "EndYear" DESC, "TableName" ASC'),
+                'FROM "Metadata"."QuestionnaireDescriptions" ORDER BY "EndYear" DESC, "TableName" ASC '),
 
     'search': 
         sql.SQL('SELECT "Variable", "TableName", "SasLabel", "Description", ts_rank("VariableTSV", to_tsquery({query})) rank '
@@ -88,6 +91,6 @@ QUERIES = {
 
     'random_name':
         sql.SQL("SELECT first.name first_name, last.name last_name FROM pool.first_name first INNER JOIN pool.last_name last ON (first.ethnicity = last.ethnicity) "
-                "WHERE last.ethnicity = %s and gender = %s order by random() limit 1")
+                "WHERE last.ethnicity = %s AND gender = %s ORDER BY random() LIMIT 1")
 }
 

@@ -14,68 +14,99 @@ from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
 from patient_generator.db_scripts import db_tool
 
-db_tool = db_tool.DBTool()
+class NHANESStats:
 
-def data_for_variable(table_name, variable, adults_only=False, gender=None):
-    with db_tool.cursor(cursor_factory=RealDictCursor) as cursor:
-        result = []
-        demo_table = db_tool.demo_table(table_name)
-        cursor.execute(db_tool.query('data_counts_by_variable').format(table=sql.Literal(table_name), 
-                variable=sql.Literal(variable), demo_table=sql.Identifier(demo_table)), [variable])
+    def __init__(self, table_name, variable, adults_only=False, gender=None, lazy=False):
+        self.db_tool = db_tool.DBTool()
+        self.table_name = table_name
+        self.variable = variable
+        self.adults_only = adults_only
+        self.gender = gender
+        self.demo_table = self.db_tool.demo_table(table_name)
+        self.data = []
+        if not lazy:
+            self.fetch_data_for_variable()
+
+
+    def fetch_data_for_variable(self):
+        with self.db_tool.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(self.db_tool.query('data_counts_by_variable').format(table=sql.Literal(self.table_name), 
+                    variable=sql.Literal(self.variable), demo_table=sql.Identifier(self.demo_table)), [self.variable])
+            
+            for row in cursor.fetchall():
+                if row['ValueDescription'] != 'Missing' and row['Count'] > 0:
+                    camelized_row = row.copy()
+                    camelized_row = self.db_tool.camelize_keys(camelized_row)
+                    if camelized_row['valueDescription'] == 'Range of Values':
+                        range = re.split(r' to ', camelized_row['codeOrValue'])
+                        min, max = range[0], range[1]
+                        stats = self.__stats(min, max)
+                        camelized_row['count'] = 0 if stats is None else stats['count']
+                        if stats is not None:
+                            camelized_row['stats'] = self.__stats(min, max)
+                    elif self.adults_only or self.gender is not None:
+                        camelized_row['count'] = self.__update_count(camelized_row['codeOrValue'])
+                    camelized_row['gender'] = self.gender if self.gender is not None else 'Any'
+                    camelized_row['adultsOnly'] = self.adults_only
+                    self.data.append(camelized_row)
+            return self.data
+
+    def __update_count(self, value):
+        with self.db_tool.cursor() as cursor:
+            query = self.db_tool.query('count_for_variable').format(variable=sql.Identifier(self.variable), table=sql.Identifier(self.table_name))
+            query = self.__join_demo_table(query)
+            query += sql.SQL(' WHERE ') + self.db_tool.conditions('variable_value').format(variable=sql.Identifier(self.variable))
+            args = [value]
+            query = self.__add_conditions(cursor, query, args)
+            logging.debug("QUERY: %s", query.as_string(cursor))
+            cursor.execute(query, args)
+            return cursor.fetchone()[0]
+            
+            
+    def __data_for_range(self, min_value, max_value):
+        with self.db_tool.cursor() as cursor:
+            query = self.db_tool.query('data_for_range').format(variable=sql.Identifier(self.variable), table=sql.Identifier(self.table_name))
+            query = self.__join_demo_table(query)
+            query +=  sql.SQL(' WHERE ') + self.db_tool.conditions('variable_range').format(variable=sql.Identifier(self.variable))
+
+            args = [min_value, max_value]
+            query = self.__add_conditions(cursor, query, args)
+
+            logging.debug("QUERY: %s", query.as_string(cursor))
+            cursor.execute(query, args)
+            return [row[0] for row in cursor.fetchall()]
         
-        for row in cursor.fetchall():
-            camelized_row = row.copy()
-            camelized_row = db_tool.camelize_keys(camelized_row)
-            if camelized_row['valueDescription'] != 'Missing' and camelized_row['count'] > 0:
-                if camelized_row['valueDescription'] == 'Range of Values':
-                    range = re.split(r' to ', camelized_row['codeOrValue'])
-                    min, max = range[0], range[1]
-                    camelized_row['stats'] = stats(table_name, demo_table, variable, min, max, adults_only, gender)
-                result.append(camelized_row)
-        return result
-
-def stats(table_name, demo_table, variable, min, max, adults_only, gender):
-    data = data_for_range(table_name, demo_table, variable, min, max, adults_only, gender)
-    stat_block = {"count": len(data)}
-    if stat_block["count"] > 0:
-        stat_block = stat_block |{
-            "mean": statistics.mean(data), 
-            "stdev": statistics.stdev(data), 
-            "median": statistics.median(data), 
-            "mode": statistics.mode(data), 
-            "variance": statistics.variance(data),
-            "quartiles": statistics.quantiles(data, n=4, method='inclusive')
-        }
-        if adults_only:
-            stat_block['adults_only'] = True
-        if gender is not None:
-            stat_block['gender'] = gender
-    return stat_block
-
-
-def data_for_range(table_name, demo_table, variable, min_value, max_value, adults_only=False, gender=None):
-    with db_tool.cursor() as cursor:
-        query = db_tool.query('data_for_range').format(variable=sql.Identifier(variable), table=sql.Identifier(table_name))
-        if table_name != demo_table:
-            query += db_tool.join('demo').format(demo_table=sql.Identifier(demo_table))
-        query +=  sql.SQL(' WHERE ') + db_tool.conditions('variable_range').format(variable=sql.Identifier(variable))
+    def __stats(self, min, max):
+        data_points = self.__data_for_range(min, max)
+        count = len(data_points)
+        return {
+            "count": count,
+            "mean": statistics.mean(data_points), 
+            "stdev": statistics.stdev(data_points), 
+            "median": statistics.median(data_points), 
+            "mode": statistics.mode(data_points), 
+            "variance": statistics.variance(data_points),
+            "quartiles": statistics.quantiles(data_points, n=4, method='inclusive')
+        } if count > 0 else None
+        
+    def __join_demo_table(self, query):
+        if self.table_name != self.demo_table:
+            query += self.db_tool.join('demo').format(demo_table=sql.Identifier(self.demo_table))
+        return query
+        
+    def __add_conditions(self, cursor, query, args):
         conditions = sql.SQL(' ')
-
-        args = [min_value, max_value]
-        if adults_only:
-            conditions += db_tool.conditions('adults_only')
-        if gender is not None:
-            conditions += db_tool.conditions('gender')
-            args.append('Male' if gender.lower() == 'm' else 'Female')
+        if self.adults_only:
+            conditions += self.db_tool.conditions('adults_only')
+        if self.gender is not None:
+            conditions += self.db_tool.conditions('gender')
+            args.append('Male' if self.gender.lower() == 'm' else 'Female')
         if conditions.as_string(cursor).strip():
             query += conditions.join(' AND ')
+        return query
         
-        logging.debug("QUERY: %s", query.as_string(cursor))
-        cursor.execute(query, args)
-        return [row[0] for row in cursor.fetchall()]
-    
-def data_as_json(table_name, variable, adults_only=False, gender=None):
-    return json.dumps(data_for_variable(table_name, variable, adults_only, gender), indent=4)
+    def data_as_json(self):
+        return json.dumps(self.data, indent=4)
 
 def parse_adults_only_from_args(argv):
     return len(argv) >= 4 and 'adults_only' == argv[3].lower() or len(argv) == 5 and 'adults_only' == argv[4].lower()
@@ -89,4 +120,4 @@ if __name__ == '__main__':
     table_name, variable = sys.argv[1], sys.argv[2]
     adults_only, gender = parse_adults_only_from_args(sys.argv), parse_gender_from_args(sys.argv)
 
-    logging.info("Stats for %s: %s", table_name, data_as_json(table_name, variable, adults_only, gender))
+    logging.info("Stats for %s: %s", table_name, NHANESStats(table_name, variable, adults_only, gender).data_as_json())

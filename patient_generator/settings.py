@@ -26,15 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-f9qsdrmnff+p3tckf(uwl@3%4=uo2l^of-@5non$3$013n9=zu'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '0.0.0.0',
-    config('DJANGO_HOST')
 ]
-
+ALLOWED_HOSTS += config('ALLOWED_HOSTS', default='').split(',')
 
 # Application definition
 
@@ -47,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'patient_generator',
 ]
 
 MIDDLEWARE = [
