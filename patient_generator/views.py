@@ -10,11 +10,12 @@ def generate(request):
     return JsonResponse(nhanes_random_respondent.generate_random_patient())
 
 def stats(request):
-    return JsonResponse(nhanes_stats.NHANESStats(
-            request.GET['table'], 
-            request.GET['variable'], 
-            request.GET.get('adultsOnly', False), 
-            request.GET.get('gender', None)).data, 
+    return JsonResponse(nhanes_stats.NhanesStats(
+                request.GET['table'], 
+                request.GET['variable'], 
+                request.GET.get('adultsOnly', False), 
+                request.GET.get('gender', None)).data,
+            encoder=nhanes_stats.NumpyEncoder,
             safe=False)
 
 def tables(request):

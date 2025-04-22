@@ -8,13 +8,15 @@
 import json
 import logging
 import re
-import statistics
 import sys
+import numpy as np
+from django.core.serializers.json import DjangoJSONEncoder
+from scipy import stats
 from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
 from patient_generator.db_scripts import db_tool
 
-class NHANESStats:
+class NhanesStats:
 
     def __init__(self, table_name, variable, adults_only=False, gender=None, lazy=False):
         self.db_tool = db_tool.DBTool()
@@ -77,16 +79,18 @@ class NHANESStats:
             return [row[0] for row in cursor.fetchall()]
         
     def __stats(self, min, max):
-        data_points = self.__data_for_range(min, max)
-        count = len(data_points)
+        data_array = np.array(self.__data_for_range(min, max))
+        count = len(data_array)
         return {
             "count": count,
-            "mean": statistics.mean(data_points), 
-            "stdev": statistics.stdev(data_points), 
-            "median": statistics.median(data_points), 
-            "mode": statistics.mode(data_points), 
-            "variance": statistics.variance(data_points),
-            "quartiles": statistics.quantiles(data_points, n=4, method='inclusive')
+            "dataType": data_array.dtype.name,
+            "mean": np.mean(data_array, dtype=data_array.dtype), 
+            "stdev": np.std(data_array, dtype=data_array.dtype), 
+            "median": np.median(data_array), 
+            "mode": stats.mode(data_array, axis=None, keepdims=False)[0], 
+            "variance": np.var(data_array),
+            "quartiles": np.percentile(data_array, [25, 50, 75]),
+            #"random_value": np.kde(data_array)
         } if count > 0 else None
         
     def __join_demo_table(self, query):
@@ -106,7 +110,18 @@ class NHANESStats:
         return query
         
     def data_as_json(self):
-        return json.dumps(self.data, indent=4)
+        return json.dumps(self.data, indent=4, cls=NumpyEncoder)
+    
+class NumpyEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NumpyEncoder, self).default(obj)
 
 def parse_adults_only_from_args(argv):
     return len(argv) >= 4 and 'adults_only' == argv[3].lower() or len(argv) == 5 and 'adults_only' == argv[4].lower()
@@ -120,4 +135,4 @@ if __name__ == '__main__':
     table_name, variable = sys.argv[1], sys.argv[2]
     adults_only, gender = parse_adults_only_from_args(sys.argv), parse_gender_from_args(sys.argv)
 
-    logging.info("Stats for %s: %s", table_name, NHANESStats(table_name, variable, adults_only, gender).data_as_json())
+    logging.info("Stats for %s: %s", table_name, NhanesStats(table_name, variable, adults_only, gender).data_as_json())
