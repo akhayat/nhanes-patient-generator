@@ -36,7 +36,7 @@ class NhanesStats:
                     variable=sql.Literal(self.variable), demo_table=sql.Identifier(self.demo_table)), [self.variable])
             
             for row in cursor.fetchall():
-                if row['ValueDescription'] != 'Missing' and row['Count'] > 0:
+                if row['Count'] > 0:
                     camelized_row = row.copy()
                     camelized_row = self.db_tool.camelize_keys(camelized_row)
                     if camelized_row['valueDescription'] == 'Range of Values':
@@ -48,6 +48,8 @@ class NhanesStats:
                             camelized_row['stats'] = self.__stats(min, max)
                     elif self.adults_only or self.gender is not None:
                         camelized_row['count'] = self.__update_count(camelized_row['codeOrValue'])
+                    if camelized_row['count'] == 0:
+                        continue
                     camelized_row['gender'] = self.gender if self.gender is not None else 'Any'
                     camelized_row['adultsOnly'] = self.adults_only
                     self.data.append(camelized_row)
@@ -75,22 +77,26 @@ class NhanesStats:
             query = self.__add_conditions(cursor, query, args)
 
             logging.debug("QUERY: %s", query.as_string(cursor))
+            logging.debug("ARGS: %s", args)
             cursor.execute(query, args)
             return [row[0] for row in cursor.fetchall()]
         
     def __stats(self, min, max):
         data_array = np.array(self.__data_for_range(min, max))
         count = len(data_array)
+        mean = np.mean(data_array, dtype=data_array.dtype)
+        stdev = np.std(data_array, dtype=data_array.dtype)
+        random_value = np.random.normal(mean, stdev)
         return {
             "count": count,
             "dataType": data_array.dtype.name,
-            "mean": np.mean(data_array, dtype=data_array.dtype), 
-            "stdev": np.std(data_array, dtype=data_array.dtype), 
+            "mean": mean,
+            "stdev": stdev,
             "median": np.median(data_array), 
             "mode": stats.mode(data_array, axis=None, keepdims=False)[0], 
             "variance": np.var(data_array),
             "quartiles": np.percentile(data_array, [25, 50, 75]),
-            #"random_value": np.kde(data_array)
+            "randomValue": np.round(random_value) if data_array.dtype.kind == 'i' else random_value
         } if count > 0 else None
         
     def __join_demo_table(self, query):

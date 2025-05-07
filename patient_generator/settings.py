@@ -31,7 +31,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '0.0.0.0',
+    '0.0.0.0'
 ]
 ALLOWED_HOSTS += config('ALLOWED_HOSTS', default='').split(',')
 
@@ -39,6 +39,7 @@ ALLOWED_HOSTS += config('ALLOWED_HOSTS', default='').split(',')
 
 INSTALLED_APPS = [
     'corsheaders',
+    'model_prefix',
     'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,7 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'patient_generator',
+    'patient_generator'
 ]
 
 MIDDLEWARE = [
@@ -92,7 +93,10 @@ DATABASES = {
         'PASSWORD': config('DB_PASS'),
         'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT'),
-        'OPTIONS': {'sslmode': config('DB_SSLMODE', default='prefer')}
+        'OPTIONS': {
+            'sslmode': config('DB_SSLMODE', default='prefer'),
+            'options': '-c search_path=pool'
+        }
     }
 }
 

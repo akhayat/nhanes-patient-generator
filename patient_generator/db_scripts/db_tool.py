@@ -40,7 +40,7 @@ class DBTool:
 CONDITIONS = {
     "adults_only": sql.SQL('"RIDAGEYR" >= 18'),
     "gender": sql.SQL('"RIAGENDR" = %s'),
-    "variable_range": sql.SQL("{variable} >= %s AND {variable} < %s"),
+    "variable_range": sql.SQL("{variable} >= %s AND {variable} <= %s"),
     "by_seqn": sql.SQL('"SEQN" = %s'),
     "variable_value": sql.SQL('{variable} = %s'),
 }

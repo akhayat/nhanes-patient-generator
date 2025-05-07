@@ -4,14 +4,12 @@ from django.db import models
 # Create your models here.
 
 class Patient(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    first_name = models.TextField()
+    last_name = models.TextField()
     age = models.IntegerField()
-    sex = models.CharField(max_length=10)
-    gender = models.CharField(max_length=10)
-    primary_language = models.CharField(max_length=50)
-    secondary_language = models.CharField(max_length=50, null=True, blank=True)
-    primary_care_physician = models.CharField(max_length=100, null=True, blank=True)
+    sex = models.TextField()
+    gender = models.TextField()
+    primary_language = models.TextField()
     allergies = models.JSONField(default=list, blank=True)
     tobacco_status = models.JSONField(default=dict, blank=True)
     alcohol_use = models.JSONField(default=dict, blank=True)
@@ -22,9 +20,8 @@ class Patient(models.Model):
     marital_status = models.JSONField(default=list, blank=True)
     children = models.IntegerField(default=0)
     pets = models.JSONField(default=dict, blank=True)
-    sick_contacts = models.BooleanField(default=False)
     travel = models.JSONField(default=dict, blank=True)
-    chief_complaint = models.TextField(null=True, blank=True)
+    chief_complaint = models.TextField()
     diet = models.JSONField(default=list, blank=True)
 
     def to_dict(self) -> dict:
@@ -35,8 +32,6 @@ class Patient(models.Model):
             "sex": self.sex,
             "gender": self.gender,
             "primary_language": self.primary_language,
-            "secondary_language": self.secondary_language,
-            "primary_care_physician": self.primary_care_physician,
             "allergies": self.allergies,
             "tobacco_status": self.tobacco_status,
             "alcohol_use": self.alcohol_use,
@@ -47,7 +42,6 @@ class Patient(models.Model):
             "marital_status": self.marital_status,
             "children": self.children,
             "pets": self.pets,
-            "sick_contacts": self.sick_contacts,
             "travel": self.travel,
             "chief_complaint": self.chief_complaint,
             "diet": self.diet,
@@ -62,8 +56,6 @@ class Patient(models.Model):
             sex=data.get("sex", ""),
             gender=data.get("gender", ""),
             primary_language=data.get("primary_language", ""),
-            secondary_language=data.get("secondary_language"),
-            primary_care_physician=data.get("primary_care_physician"),
             allergies=data.get("allergies", []),
             tobacco_status=data.get("tobacco_status", {}),
             alcohol_use=data.get("alcohol_use", {}),
@@ -76,7 +68,6 @@ class Patient(models.Model):
             pets=data.get("pets", {"dogs": 0, "cats": 0, "birds": 0, "other": 0}),
             sick_contacts=data.get("sick_contacts", False),
             travel=data.get("travel", {"domestic": False, "international": False}),
-            chief_complaint=data.get("chief_complaint"),
             diet=data.get("diet", []),
         )
 
@@ -106,7 +97,6 @@ class Patient(models.Model):
         VEGAN = "Vegan"
         OTHER = "Other"
 
-
     class SubstanceUseFrequency(models.TextChoices):
         NEVER = "Never"
         OCCASIONALLY = "Occasionally"
@@ -118,3 +108,29 @@ class Patient(models.Model):
         BLACK = "Black"
         AAPI = "Asian American and Pacific Islander"
         HISPANIC = "Hispanic"
+
+    class Meta:
+        db_prefix = None
+        db_table = 'generated_patient'
+
+class AggregatedNhanesData(models.Model):
+    field_name = models.TextField()
+    value = models.TextField()
+    gender = models.CharField(max_length=1, blank=True, null=True)
+    race = models.TextField(blank=True, null=True)
+    count = models.IntegerField()
+    range_of_values = models.BooleanField(blank=True, null=True, default=False)
+    mean = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    median = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    mode = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    stdev = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    variance = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    q1 = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    q2 = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    q3 = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_prefix = None
+        db_table = 'nhanes_aggregated'
+
