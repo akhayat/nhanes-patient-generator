@@ -9,6 +9,7 @@ class Patient(models.Model):
     age = models.IntegerField()
     sex = models.TextField()
     gender = models.TextField()
+    ethnicity = models.TextField()
     primary_language = models.TextField()
     allergies = models.JSONField(default=list, blank=True)
     tobacco_status = models.JSONField(default=dict, blank=True)
@@ -31,6 +32,7 @@ class Patient(models.Model):
             "age": self.age,
             "sex": self.sex,
             "gender": self.gender,
+            "ethnicity": self.ethnicity,
             "primary_language": self.primary_language,
             "allergies": self.allergies,
             "tobacco_status": self.tobacco_status,

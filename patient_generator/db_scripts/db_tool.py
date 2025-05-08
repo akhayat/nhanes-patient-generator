@@ -90,7 +90,8 @@ QUERIES = {
                 'WHERE "VariableTSV" @@ to_tsquery({query}) ORDER BY rank desc LIMIT %s'),
 
     'random_name':
-        sql.SQL("SELECT first.name first_name, last.name last_name FROM pool.first_name first INNER JOIN pool.last_name last ON (first.ethnicity = last.ethnicity) "
-                "WHERE last.ethnicity = %s AND gender = %s ORDER BY random() LIMIT 1")
+        sql.SQL("SELECT first.name first_name, last.name last_name " 
+                "FROM pool.first_name first INNER JOIN pool.last_name last ON (first.ethnicity = last.ethnicity) "
+                "WHERE last.ethnicity ILIKE %s AND gender ILIKE %s ORDER BY random() LIMIT 1")
 }
 
