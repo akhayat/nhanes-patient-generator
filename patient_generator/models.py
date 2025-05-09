@@ -9,7 +9,7 @@ class Patient(models.Model):
     age = models.IntegerField()
     sex = models.TextField()
     gender = models.TextField()
-    ethnicity = models.TextField()
+    ethnicity = models.TextField(default='')
     primary_language = models.TextField()
     allergies = models.JSONField(default=list, blank=True)
     tobacco_status = models.JSONField(default=dict, blank=True)
@@ -57,6 +57,7 @@ class Patient(models.Model):
             age=data.get("age", 0),
             sex=data.get("sex", ""),
             gender=data.get("gender", ""),
+            ethnicity=data.get("ethnicity", ""),
             primary_language=data.get("primary_language", ""),
             allergies=data.get("allergies", []),
             tobacco_status=data.get("tobacco_status", {}),
@@ -130,6 +131,7 @@ class AggregatedNhanesData(models.Model):
     q1 = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     q2 = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     q3 = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    is_int = models.BooleanField(default=False)
 
     class Meta:
         managed = False

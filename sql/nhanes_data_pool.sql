@@ -101,7 +101,8 @@ CREATE TABLE pool.nhanes_aggregated (
     variance NUMERIC,
     q1 NUMERIC,
     q2 NUMERIC GENERATED ALWAYS AS (median) STORED,
-    q3 NUMERIC
+    q3 NUMERIC,
+    is_int BOOLEAN DEFAULT FALSE
 );
 
 -- Race
@@ -116,7 +117,7 @@ GROUP BY "RIDRETH3";
 
 -- Age 
 
-INSERT INTO pool.nhanes_aggregated (field_name, value, count, range_of_values, mean, median, mode, stdev, variance, q1, q3)
+INSERT INTO pool.nhanes_aggregated (field_name, value, count, range_of_values, mean, median, mode, stdev, variance, q1, q3, is_int)
 SELECT DISTINCT
     'age' field_name,
     '18 to 79' value,
@@ -128,7 +129,8 @@ SELECT DISTINCT
     STDDEV("RIDAGEYR") stdev,
     VARIANCE("RIDAGEYR") variance,
     PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY "RIDAGEYR") q1,
-    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "RIDAGEYR") q3
+    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "RIDAGEYR") q3,
+    TRUE is_int
 FROM nhanes_copy.demo_l
 WHERE "RIDAGEYR" >= 18 AND "RIDAGEYR" < 80;
 
@@ -178,7 +180,7 @@ SELECT DISTINCT
 FROM nhanes_copy.smq_l
 WHERE "SMQ040" IN ('Every day', 'Some days', 'Not at all') GROUP BY "SMQ040";
 
-INSERT INTO pool.nhanes_aggregated (field_name, value, count, range_of_values, mean, median, mode, stdev, variance, q1, q3)
+INSERT INTO pool.nhanes_aggregated (field_name, value, count, range_of_values, mean, median, mode, stdev, variance, q1, q3, is_int)
 SELECT DISTINCT
     'tobacco_pack_per_day' field_name,
     '1 to 5' value,
@@ -190,7 +192,8 @@ SELECT DISTINCT
     STDDEV("SMD650") stdev,
     VARIANCE("SMD650") variance,
     PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY "SMD650") q1,
-    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "SMD650") q3
+    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "SMD650") q3,
+    TRUE is_int
 FROM nhanes_copy.smq_l
 WHERE "SMD650" IS NOT NULL;
 
@@ -277,7 +280,7 @@ FROM nhanes_copy.alq_l
 WHERE "ALQ130" IS NOT NULL AND "ALQ130" >= 15 
 GROUP BY "ALQ130";
 
-INSERT INTO pool.nhanes_aggregated (field_name, value, count, range_of_values, mean, median, mode, stdev, variance, q1, q3)
+INSERT INTO pool.nhanes_aggregated (field_name, value, count, range_of_values, mean, median, mode, stdev, variance, q1, q3, is_int)
 SELECT DISTINCT
     'alcohol_drink_per_day' field_name,
     '1 to 14' value,
@@ -289,7 +292,8 @@ SELECT DISTINCT
     STDDEV("ALQ130") stdev,
     VARIANCE("ALQ130") variance,
     PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY "ALQ130") q1,
-    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "ALQ130") q3
+    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "ALQ130") q3,
+    TRUE is_int
 FROM nhanes_copy.alq_l
 WHERE "ALQ130" IS NOT NULL AND "ALQ130" < 15;
 
