@@ -18,7 +18,7 @@ from patient_generator.db_scripts import db_tool
 
 class NhanesStats:
 
-    def __init__(self, table_name, variable, adults_only=False, gender=None, lazy=False):
+    def __init__(self, table_name, variable, adults_only=True, gender=None, lazy=False):
         self.db_tool = db_tool.DBTool()
         self.table_name = table_name
         self.variable = variable
